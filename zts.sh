@@ -51,6 +51,7 @@ usage() {
     msg 5b "	usage$c7	This text"
     echo
     msg 5b "	init$c7	Ensure the zotero-translation-server is set up"
+    msg 5b "	shell$c7	Open a shell in the dev dir"
     echo
     msg 5b "	start$c7	Run the zotero-translation-server"
     msg 5b "	stop$c7	Stop the zotero-translation-server"
@@ -206,6 +207,10 @@ case "$ACTION" in
         ;;
     update-translators)
         usage "NIH"
+        ;;
+    shell)
+        cd "$SCRIPT_DIR"
+        exec "$SHELL"
         ;;
     *)
         usage
