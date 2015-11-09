@@ -5,22 +5,23 @@ ZOTERO_PORT=1234
 # xulrunner version
 XULRUNNER_RELEASE="31.0"
 # Repository with translation-server
-GIT_TRANSLATION_SERVER="git@github.com:infolis/translation-server.git"
+GIT_TRANSLATION_SERVER="https://github.com/infolis/translation-server.git"
 
-ACTION=$1
-FORCE_STOP_FLAG=
-
-# PID file
-TRANSLATION_SERVER_PID_FILE=/tmp/zotero-ts.pid
 SCRIPT_DIR=$(cd "$( dirname $(readlink -f "${BASH_SOURCE[0]}") )" && pwd)
 SCRIPT_NAME=$(basename $(readlink -f "$0"))
+
 TRANSLATION_SERVER_PATH="$SCRIPT_DIR/translation-server"
 TRANSLATORS_PATH="$SCRIPT_DIR/translators"
+
 XULRUNNER_SYMLINK="$TRANSLATION_SERVER_PATH/xulrunner-sdk"
 XULRUNNER_DIR="$SCRIPT_DIR/xulrunner-sdk"
 XULRUNNER_FILE="xulrunner-${XULRUNNER_RELEASE}.en-US.linux-x86_64.sdk.tar.bz2"
 XULRUNNER_URL="http://ftp.mozilla.org/pub/mozilla.org/xulrunner/releases/$XULRUNNER_RELEASE/sdk/$XULRUNNER_FILE"
 
+ACTION=$1
+FORCE_STOP_FLAG=
+# PID file
+TRANSLATION_SERVER_PID_FILE=/tmp/zotero-ts.pid
 
 ESC_SEQ="\x1b["
 c0="${ESC_SEQ}39;49;00m"
@@ -40,8 +41,7 @@ c6b="${ESC_SEQ}36;01m"
 c7b="${ESC_SEQ}37;01m" 
 msg() {
     col="c$1"
-
-    echo -e "> ${!col}$2$c0"
+echo -e "> ${!col}$2$c0"
 }
 
 usage() {
@@ -63,6 +63,7 @@ usage() {
     msg 5b "	status$c7	Check whether zotero-translation-server is running"
     echo
     msg 5b "	translate$c7 <URI>	Scrape <URI> for bibliographic data"
+    msg 5b "	crossref-agency$c7 <DOI>	Search CrossRef for agency for DOI"
     exit
 }
 
@@ -172,6 +173,16 @@ exit_unless_force() {
     fi
 }
 
+crossref_agency() {
+    x=$(curl "http://api.crossref.org/works/$doi/agency")
+    if [ $? -gt 0 ];then
+        echo ERROR
+    else
+        echo $x | prettyjson
+    fi
+
+}
+
 case "$ACTION" in
     init)
         zotero_init
@@ -204,6 +215,10 @@ case "$ACTION" in
         ;;
     translate)
         zotero_translate $2
+        ;;
+    crossref-agency)
+        doi=$2
+        crossref_agency "$doi"
         ;;
     update-translators)
         usage "NIH"
