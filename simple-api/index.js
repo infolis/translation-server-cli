@@ -19,14 +19,29 @@ app.get('/', function(req, res, next) {
       .send({"url":req.query.url, "sessionid":SESSION_ID})
       .end(function(err, resp){
         if (err) return next(err);
+        doiMode = format === 'doi';
+        if (doiMode) {
+          format = 'ris';
+        }
         request
             .post(ZOTERO_BASEURL + "/export?format=" + format)
             .buffer(true)
             .send(resp.body)
             .end(function(err, resp) {
               if (err) return next(err);
-              res.set('Content-Type', resp.get('Content-Type'))
-              res.send(resp.text);
+              if (doiMode) {
+                doiMatch = resp.text.match(/DO\s+-\s+(.*)/);
+                if (! doiMatch) {
+                  res.statusCode = 404;
+                  res.end();
+                } else {
+                  res.set('Content-Type', "text/plain");
+                  res.send(doiMatch[1]);
+                }
+              } else {
+                res.set('Content-Type', resp.get('Content-Type'))
+                res.send(resp.text);
+              }
             });
       });
 });
