@@ -115,6 +115,7 @@ zotero_start() {
         exit 156
     fi
     echo "$zpid" > $TRANSLATION_SERVER_PID_FILE
+    echo "Started, logging to  $SCRIPT_DIR/log"
     cd $OLDPWD
 }
 
